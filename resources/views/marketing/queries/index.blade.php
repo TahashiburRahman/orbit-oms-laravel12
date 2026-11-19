@@ -1,0 +1,7 @@
+@extends('layouts.app')
+@section('title','Client queries')
+@section('content')
+<div class="page-header"><div><h1>Client queries</h1><p class="muted">Keep client questions and team responses together.</p></div>@can('create',\App\Models\ClientQuery::class)<a class="btn" href="{{ route('queries.create') }}">Log a query</a>@endcan</div>
+<form class="filter-bar" method="get" role="search"><input name="q" aria-label="Search queries" placeholder="Search client queries" value="{{ request('q') }}"><select name="status" aria-label="Query status"><option value="">All statuses</option>@foreach(['open','awaiting_response','escalated','resolved'] as $status)<option value="{{ $status }}" @selected(request('status')===$status)>{{ ucfirst(str_replace('_',' ',$status)) }}</option>@endforeach</select><button class="btn btn-secondary">Filter</button></form>
+<div class="card table-wrap"><table aria-label="Client queries"><thead><tr><th scope="col">Query</th><th scope="col">Project</th><th scope="col">Assigned to</th><th scope="col">Priority</th><th scope="col">Status</th></tr></thead><tbody>@forelse($queries as $query)<tr><td><a href="{{ route('queries.show',$query) }}">{{ $query->subject }}</a></td><td>{{ $query->project->name }}</td><td>{{ $query->assignee->name }}</td><td>{{ $query->priority }}</td><td><x-status :value="$query->status" /></td></tr>@empty<tr><td colspan="5" class="empty-state">No client queries in this view.</td></tr>@endforelse</tbody></table></div>{{ $queries->links() }}
+@endsection

@@ -1,0 +1,13 @@
+@extends('layouts.app')
+@section('title', $client->name)
+@section('content')
+<div class="page-header"><div><div class="eyebrow">Client</div><h1>{{ $client->name }}</h1><p class="muted">{{ $client->company }}</p></div><div class="actions"><a class="btn-secondary" href="{{ route('clients.index') }}">All clients</a>@can('update', $client)<a class="btn" href="{{ route('clients.edit', $client) }}">Edit client</a>@endcan</div></div>
+<div class="detail-grid">
+    <section class="card"><div class="card-heading"><h2>Projects</h2>@can('create', App\Models\Project::class)<a class="btn-secondary btn-sm" href="{{ route('projects.create', ['client_id' => $client->id]) }}">Add project</a>@endcan</div><div class="record-list">@forelse($projects as $project)<a class="record-row" href="{{ route('projects.show', $project) }}"><span><strong>{{ $project->name }}</strong><span class="record-subtitle">{{ $project->assignee?->name ?? 'Unassigned' }} · {{ $project->due_date?->format('d M Y') ?? 'No deadline' }}</span></span><x-status :value="$project->status" /></a>@empty<div class="empty-state"><strong>No linked projects</strong><p>Projects you can access for this client will appear here.</p></div>@endforelse</div></section>
+    <aside class="card"><h2>Contact details</h2><dl class="detail-list"><dt>Email</dt><dd>@if($client->email)<a class="text-link" href="mailto:{{ $client->email }}">{{ $client->email }}</a>@else Not provided @endif</dd><dt>Phone</dt><dd>{{ $client->phone ?: 'Not provided' }}</dd><dt>Relationship owner</dt><dd>{{ $client->assignee?->name ?? 'Unassigned' }}</dd><dt>Status</dt><dd><x-status :value="$client->status" /></dd></dl><div class="detail-section"><h3>Notes</h3><p class="whitespace-pre-line muted">{{ $client->notes ?: 'No notes recorded.' }}</p></div></aside>
+</div>
+<section class="card"><h2>Domains and websites</h2><div class="record-list">@forelse($client->websites as $website)<div class="record-row"><span><strong>{{ $website->domain }}</strong><span class="record-subtitle">{{ $website->website_name ?: 'Website' }}</span></span></div>@empty<p class="muted">No domains saved yet. Add one with a task or from Edit client.</p>@endforelse</div></section>
+@include('partials.history')
+<x-delete-record resource="clients" :record="$client" label="Delete client" />
+@if(auth()->user()->isSuperAdmin() && $client->websites->isNotEmpty())<section class="card"><h2>Manage saved domains</h2><div class="actions">@foreach($client->websites as $website)<x-delete-record resource="websites" :record="$website" :label="'Delete domain '.$website->domain" compact />@endforeach</div></section>@endif
+@endsection
